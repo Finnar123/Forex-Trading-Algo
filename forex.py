@@ -160,8 +160,6 @@ class Oanda:
 oanda = Oanda(os.getenv("ACCESS_TOKEN"))
 
 
-#oanda = Oanda('0b3cca7a16a88eb3c736288a94099cc8-5a31f8ae15723108dd5fdaf28e82bc82')
-
 lastid = {}
 
 if os.path.exists("lastid.json"):
