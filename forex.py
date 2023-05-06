@@ -1,6 +1,7 @@
 import requests
 import json
 import os
+import openpyxl
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -128,16 +129,84 @@ class Oanda:
             raise Exception("Could not fetch all trades.")
 
         return response.json()
+    
+    def getAllTransactions(self):
+        endpoint = self.account_endpoint + self.account_id + '/transactions'
+        response = requests.get(endpoint, headers=self.default_headers)
+
+        if response.status_code != 200:
+            raise Exception("Could not fetch all transactions")
+
+        return response.json()
+    
+    def getTransactionSince(self, id):
+        # params = type: ORDER_FILL
+        params = {'id': id,'type': 'ORDER_FILL' }
+
+        endpoint = self.account_endpoint + self.account_id + '/transactions/sinceid'
+        response = requests.get(endpoint, headers=self.default_headers, params=params)
+
+        if response.status_code != 200:
+            raise Exception("Could not fetch all transactions since " + id)
+
+        return response.json()
+    
+
 
         
 
 
         
 oanda = Oanda(os.getenv("ACCESS_TOKEN"))
+
+
+#oanda = Oanda('0b3cca7a16a88eb3c736288a94099cc8-5a31f8ae15723108dd5fdaf28e82bc82')
+
+lastid = {}
+
+if os.path.exists("lastid.json"):
+            with open("lastid.json") as f:
+                lastid = json.load(f)
+
+
 oanda.setCurrentAccount('101-001-24797201-001')
+transactions = oanda.getTransactionSince(lastid["id"])
 
+workbook = openpyxl.load_workbook("Trade Tracker.xlsx")
 
+sheet = workbook["Sheet1"]
 
+for i in range(len(transactions['transactions'])):
+    pair = transactions['transactions'][i]['instrument']
+    price = transactions['transactions'][i]['pl']
+
+    price = float(price)
+
+    if price > 0:
+        sheet["A" + str(lastid["currentrow"])] = pair
+        sheet["B" + str(lastid["currentrow"])] = "win"
+        sheet["E" + str(lastid["currentrow"])] = price
+        lastid["currentrow"] += 1
+    elif price < 0:
+        sheet["A" + str(lastid["currentrow"])] = pair
+        sheet["C" + str(lastid["currentrow"])] = "lose"
+        sheet["F" + str(lastid["currentrow"])] = abs(price)
+        lastid["currentrow"] += 1
+    # else:
+    #     sheet["D" + str(lastid["currentrow"])] = "BE"
+
+    
+
+    
+if transactions['transactions'] != []:
+    lastid["id"] = transactions['transactions'][len(transactions['transactions']) -1]['id']
+else:
+    print("You are caught up!")
+
+workbook.save("Trade Tracker.xlsx")
+
+with open('lastid.json', 'w') as f:
+        json.dump(lastid, f)
 
 
 
