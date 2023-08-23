@@ -151,11 +151,6 @@ class Oanda:
 
         return response.json()
     
-
-
-        
-
-
         
 oanda = Oanda(os.getenv("ACCESS_TOKEN"))
 
@@ -170,9 +165,12 @@ if os.path.exists("lastid.json"):
 oanda.setCurrentAccount('101-001-24797201-001')
 transactions = oanda.getTransactionSince(lastid["id"])
 
+
 workbook = openpyxl.load_workbook("Trade Tracker.xlsx")
 
 sheet = workbook["Sheet1"]
+
+balance = []
 
 for i in range(len(transactions['transactions'])):
     pair = transactions['transactions'][i]['instrument']
@@ -193,7 +191,11 @@ for i in range(len(transactions['transactions'])):
     # else:
     #     sheet["D" + str(lastid["currentrow"])] = "BE"
 
-    
+    # Balance of user 
+    curbal = transactions['transactions'][i]['accountBalance']
+    balance.append(curbal)
+    sheet["H" + str(lastid["currentrow"])] = curbal
+
 
     
 if transactions['transactions'] != []:
