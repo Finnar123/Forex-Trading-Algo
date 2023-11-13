@@ -157,6 +157,7 @@ oanda = Oanda(os.getenv("ACCESS_TOKEN"))
 
 lastid = {}
 
+
 if os.path.exists("lastid.json"):
             with open("lastid.json") as f:
                 lastid = json.load(f)
@@ -171,6 +172,7 @@ workbook = openpyxl.load_workbook("Trade Tracker.xlsx")
 sheet = workbook["Sheet1"]
 
 balance = []
+
 
 for i in range(len(transactions['transactions'])):
     pair = transactions['transactions'][i]['instrument']
@@ -195,6 +197,8 @@ for i in range(len(transactions['transactions'])):
     curbal = transactions['transactions'][i]['accountBalance']
     balance.append(curbal)
     sheet["H" + str(lastid["currentrow"])] = curbal
+    sheet["I" + str(lastid["currentrow"])] = transactions['transactions'][i]['id']
+    sheet["J" + str(lastid["currentrow"])] = transactions['transactions'][i]['time']
 
 
     
